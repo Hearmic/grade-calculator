@@ -42,6 +42,39 @@
             text-align: center;
         }
 
+        .language-switcher {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .lang-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border-color: white;
+        }
+
         .header h1 {
             font-size: 28px;
             font-weight: 700;
@@ -370,6 +403,11 @@
 <body>
     <div class="container">
         <div class="header">
+            <div class="language-switcher">
+                <button type="button" class="lang-btn active" onclick="setLanguage('en')">EN</button>
+                <button type="button" class="lang-btn" onclick="setLanguage('kk')">KK</button>
+                <button type="button" class="lang-btn" onclick="setLanguage('ru')">RU</button>
+            </div>
             <h1 data-en="Grade Prediction" data-kk="Баға болжамы" data-ru="Прогноз оценок">Grade Prediction</h1>
             <p data-en="Calculate what you need to reach your target grade" data-kk="Мақсатыңызға жету үшін қандай баға қажет екенін есептеңіз" data-ru="Рассчитайте, какие оценки вам нужны для достижения вашей цели">Calculate what you need to reach your target grade</p>
         </div>
@@ -427,9 +465,9 @@
                         <div class="section-title" data-en="Final Exam" data-kk="Қорытынды емтихан" data-ru="Финальный экзамен">Final Exam</div>
                     </div>
                     <div class="final-item">
-                        <input type="number" id="finalGrade" placeholder="Your grade" step="0.01">
+                        <input type="number" id="finalGrade" placeholder="Your grade" step="0.01" data-placeholder-en="Your grade" data-placeholder-kk="Сіздің баға" data-placeholder-ru="Ваша оценка">
                         <span class="slash">/</span>
-                        <input type="number" id="finalMax" placeholder="Max grade" step="0.01">
+                        <input type="number" id="finalMax" placeholder="Max grade" step="0.01" data-placeholder-en="Max grade" data-placeholder-kk="Максималды баға" data-placeholder-ru="Максимальная оценка">
                     </div>
                 </div>
 
@@ -479,6 +517,13 @@
         function setLanguage(lang) {
             document.documentElement.setAttribute('data-lang', lang);
             localStorage.setItem('language', lang);
+            
+            // Update active button state
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
+            
             updateLanguage();
         }
         
@@ -497,10 +542,60 @@
                     }
                 }
             });
+            
+            // Update placeholder text
+            document.querySelectorAll('[data-placeholder-en]').forEach(el => {
+                const placeholderKey = `data-placeholder-${lang}`;
+                if (el.dataset[`placeholder${lang.charAt(0).toUpperCase() + lang.slice(1)}`] !== undefined) {
+                    el.placeholder = el.dataset[`placeholder${lang.charAt(0).toUpperCase() + lang.slice(1)}`];
+                }
+            });
         }
         
-        // Set initial language
-        const savedLang = localStorage.getItem('language') || 'en';
+        // Localized number formatting
+        function formatNumber(num, lang = 'en') {
+            if (typeof num !== 'number') return num;
+            
+            const options = {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            };
+            
+            const localeMap = {
+                'en': 'en-US',
+                'kk': 'kk-KZ',
+                'ru': 'ru-RU'
+            };
+            
+            const locale = localeMap[lang] || 'en-US';
+            return new Intl.NumberFormat(locale, options).format(num);
+        }
+        
+        // Automatic language detection
+        function detectBrowserLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const supportedLangs = ['en', 'kk', 'ru'];
+            
+            // Check if browser language matches exactly
+            if (supportedLangs.includes(browserLang)) {
+                return browserLang;
+            }
+            
+            // Check if browser language starts with a supported language code
+            const langPrefix = browserLang.split('-')[0];
+            if (supportedLangs.includes(langPrefix)) {
+                return langPrefix;
+            }
+            
+            // Default to English
+            return 'en';
+        }
+        
+        // Set initial language (with automatic detection)
+        let savedLang = localStorage.getItem('language');
+        if (!savedLang) {
+            savedLang = detectBrowserLanguage();
+        }
         setLanguage(savedLang);
         
         // Test grade validation
@@ -643,6 +738,9 @@
                     const finalMax = document.getElementById('finalMax').value.trim() ? parseFloat(document.getElementById('finalMax').value) : '';
                     const totalTests = parseInt(document.getElementById('totalTests').value) || testGrades.length;
                     
+                    // Get current language
+                    const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
+                    
                     // Prepare form data
                     const formData = new FormData();
                     formData.append('grades', assignmentGrades.join(','));
@@ -651,6 +749,7 @@
                     formData.append('final_grade', finalGrade);
                     formData.append('final_max', finalMax);
                     formData.append('total_tests', totalTests);
+                    formData.append('language', currentLang);
                     
                     // Get CSRF token from the form
                     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -682,6 +781,9 @@
                     } else {
                         resultMessage.textContent = result.message;
                         
+                        // Get language for formatting
+                        const lang = result.language || 'en';
+                        
                         // Build detailed results
                         let detailsHTML = '<div style="margin-top: 15px;">';
                         
@@ -694,9 +796,10 @@
                             </div>`;
                         }
                         if (result.current_percent !== undefined) {
+                            const formattedPercent = formatNumber(result.current_percent, lang);
                             detailsHTML += `<div style="text-align: center; padding: 15px; background: #f0f0f0; border-radius: 8px;">
                                 <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Current %</div>
-                                <div style="font-size: 24px; font-weight: bold; color: #667eea;">${result.current_percent}%</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #667eea;">${formattedPercent}%</div>
                             </div>`;
                         }
                         detailsHTML += '</div>';
@@ -718,11 +821,14 @@
                                 
                                 // If final exam percentage is specifically calculated
                                 if (pred.needed_final_percent !== undefined) {
+                                    const formattedFinalPercent = formatNumber(pred.needed_final_percent, lang);
+                                    const formattedFinalScore = formatNumber(pred.needed_final_score, lang);
                                     detailsHTML += `<div style="font-size: 13px; color: #666; margin-top: 4px;">
-                                        <strong>Final Exam:</strong> ${pred.needed_final_percent}% (${pred.needed_final_score}/10)
+                                        <strong>Final Exam:</strong> ${formattedFinalPercent}% (${formattedFinalScore}/10)
                                     </div>`;
                                 } else if (pred.needed_percent !== undefined) {
-                                    detailsHTML += `<div style="font-size: 13px; color: #666; margin-top: 4px;">Need: <strong>${pred.needed_percent}%</strong> on ${pred.missing_parts.join(' + ')}</div>`;
+                                    const formattedPercent = formatNumber(pred.needed_percent, lang);
+                                    detailsHTML += `<div style="font-size: 13px; color: #666; margin-top: 4px;">Need: <strong>${formattedPercent}%</strong> on ${pred.missing_parts.join(' + ')}</div>`;
                                 } else if (pred.needed_tens !== undefined) {
                                     if (pred.message === 'Already reached') {
                                         detailsHTML += `<div style="font-size: 13px; color: #4CAF50; margin-top: 4px;"><strong>✓ Already reached!</strong></div>`;

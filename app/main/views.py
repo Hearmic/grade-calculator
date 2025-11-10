@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.db import connection
 import logging
+from .translations import get_translation
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +32,18 @@ def calculate_prediction(request):
     - test_grades: comma-separated test grades (e.g., "9,8")
     - final_grade: final exam grade (single value)
     - total_tests: total number of tests expected (optional, defaults to completed tests)
+    - language: language code (en, kk, ru) for localized messages
     
     Returns JSON with prediction message and current grade information.
     """
     if request.method != "POST":
-        return JsonResponse({"message": "Invalid request"}, status=405)
+        lang = request.POST.get("language", "en")
+        return JsonResponse({"message": get_translation('invalid_request', lang)}, status=405)
+    
+    # Get language preference
+    language = request.POST.get("language", "en")
+    if language not in ['en', 'kk', 'ru']:
+        language = 'en'
     
     # Parse input data
     assign_grades_str = request.POST.get("grades", "")
@@ -52,7 +60,7 @@ def calculate_prediction(request):
     # Validate input ranges
     for grade in assign_grades:
         if grade < 0 or grade > 10:
-            return JsonResponse({"message": "All grades must be between 0 and 10"}, status=400)
+            return JsonResponse({"message": get_translation('invalid_grades', language)}, status=400)
     
     # Calculate completed tests count
     completed_tests = len(test_grades)
@@ -102,7 +110,7 @@ def calculate_prediction(request):
     # If already at highest grade
     if next_grade is None:
         return JsonResponse({
-            "message": f"Congratulations! You already have the highest grade (5).",
+            "message": get_translation('already_highest', language),
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2)
         })
@@ -162,10 +170,11 @@ def calculate_prediction(request):
             predictions.append(pred)
         
         return JsonResponse({
-            "message": "Grade predictions for remaining assessments:",
+            "message": get_translation('grade_predictions_remaining', language),
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2),
-            "predictions": predictions
+            "predictions": predictions,
+            "language": language
         })
     
     # Case 2: All assessments completed - calculate additional perfect assignments needed
@@ -215,10 +224,11 @@ def calculate_prediction(request):
             })
         
         return JsonResponse({
-            "message": "Grade predictions with additional perfect assignments:",
+            "message": get_translation('grade_predictions_assignments', language),
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2),
-            "predictions": predictions
+            "predictions": predictions,
+            "language": language
         })
 
 
