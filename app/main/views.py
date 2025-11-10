@@ -107,105 +107,118 @@ def calculate_prediction(request):
             "current_percent": round(current_percent * 100, 2)
         })
     
-    target_threshold = GRADES_PERCENT[next_grade]
+    # Build predictions for all reachable grades
+    predictions = []
     
     # Case 1: Missing tests or final exam
     if missing_tests > 0 or not has_final:
-        missing_weight = 0.0
-        missing_parts = []
-        
-        if missing_tests > 0:
-            missing_weight += WEIGHT_TESTS
-            missing_parts.append(f"{missing_tests} test(s)")
-        
-        if not has_final:
-            missing_weight += WEIGHT_FINAL
-            missing_parts.append("final exam")
-        
-        # Calculate required score on missing assessments
-        # Formula: (current_score + needed_score * missing_weight) / 10 = target_threshold
-        # Therefore: needed_score = (target_threshold * 10 - current_score) / missing_weight
-        
-        needed_score = (target_threshold * 10 - current_score) / missing_weight
-        
-        if needed_score > 10:
-            return JsonResponse({
-                "message": f"Even with 10 perfect scores , you cannot reach grade {next_grade}.",
-                "current_grade": current_grade,
-                "current_percent": round(current_percent * 100, 2),
+        # Calculate for each grade higher than current
+        for target_grade in sorted([g for g in GRADES_PERCENT.keys() if g > current_grade]):
+            target_threshold = GRADES_PERCENT[target_grade]
+            
+            missing_weight = 0.0
+            missing_parts = []
+            
+            if missing_tests > 0:
+                missing_weight += WEIGHT_TESTS
+                missing_parts.append(f"{missing_tests} test(s)")
+            
+            if not has_final:
+                missing_weight += WEIGHT_FINAL
+                missing_parts.append("final exam")
+            
+            # Calculate required score on missing assessments
+            needed_score = (target_threshold * 10 - current_score) / missing_weight
+            needed_percent = (needed_score / 10) * 100
+            
+            # If only final exam is missing, calculate specifically for final
+            needed_final_percent = None
+            if not has_final and missing_tests == 0:
+                # Only final is missing: (current_score + needed_final * WEIGHT_FINAL) / 10 = target_threshold
+                # needed_final = (target_threshold * 10 - current_score) / WEIGHT_FINAL
+                needed_final_score = (target_threshold * 10 - current_score) / WEIGHT_FINAL
+                needed_final_percent = (needed_final_score / 10) * 100
+                if needed_final_score < 0:
+                    needed_final_score = 0
+                    needed_final_percent = 0
+            
+            if needed_score < 0:
+                needed_score = 0
+                needed_percent = 0
+            
+            pred = {
+                "target_grade": target_grade,
                 "needed_score": round(needed_score, 2),
-                "missing": missing_parts
-            })
-        
-        if needed_score < 0:
-            needed_score = 0
+                "needed_percent": round(needed_percent, 2),
+                "reachable": needed_score <= 10,
+                "missing_parts": missing_parts
+            }
+            
+            # Add final-specific calculation if applicable
+            if needed_final_percent is not None:
+                pred["needed_final_percent"] = round(needed_final_percent, 2)
+                pred["needed_final_score"] = round(needed_final_score, 2)
+            
+            predictions.append(pred)
         
         return JsonResponse({
-            "message": f"To reach grade {next_grade}, you need at least {needed_score:.2f}/10 on your remaining {', '.join(missing_parts)}.",
+            "message": "Grade predictions for remaining assessments:",
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2),
-            "needed_score": round(needed_score, 2),
-            "target_grade": next_grade,
-            "missing": missing_parts
+            "predictions": predictions
         })
     
     # Case 2: All assessments completed - calculate additional perfect assignments needed
     else:
-        # Current overall average (weighted)
-        current_avg = current_score
-        target_avg = target_threshold * 10
+        predictions = []
         
-        if current_avg >= target_avg:
-            return JsonResponse({
-                "message": f"You already have grade {next_grade} or higher!",
-                "current_grade": current_grade,
-                "current_percent": round(current_percent * 100, 2)
-            })
-        
-        # Simulate adding perfect 10s as additional assignments (weighted by WEIGHT_ASSIGNMENTS)
-        # Formula: We need to add assignments until the new weighted average reaches target
-        # New assignment average = (sum(current_assignments) + 10*n) / (len(current_assignments) + n)
-        # New weighted score = new_assign_avg * WEIGHT_ASSIGNMENTS + test_avg * WEIGHT_TESTS + final * WEIGHT_FINAL
-        # This needs to equal target_threshold * 10
-        
-        # Calculate contribution from tests and final (these don't change)
-        fixed_contribution = 0.0
-        if test_grades:
-            test_avg = sum(test_grades) / len(test_grades)
-            fixed_contribution += test_avg * WEIGHT_TESTS
-        if final_grade is not None:
-            fixed_contribution += final_grade * WEIGHT_FINAL
-        
-        # Current assignments
-        current_assign_sum = sum(assign_grades) if assign_grades else 0
-        current_assign_count = len(assign_grades) if assign_grades else 0
-        
-        # Try adding perfect assignments until we reach target
-        n = 0
-        
-        while n <= 10:
-            new_assign_avg = (current_assign_sum + 10 * n) / (current_assign_count + n) if (current_assign_count + n) > 0 else 10
-            new_weighted_score = new_assign_avg * WEIGHT_ASSIGNMENTS + fixed_contribution
+        # Calculate for each grade higher than current
+        for target_grade in sorted([g for g in GRADES_PERCENT.keys() if g > current_grade]):
+            target_threshold = GRADES_PERCENT[target_grade]
+            target_avg = target_threshold * 10
             
-            if new_weighted_score >= target_threshold * 10:
-                break
-            n += 1
-        
-        if n > 10:
-            return JsonResponse({
-                "message": f"You would need more than {n} additional perfect assignments to reach grade {next_grade}. This may not be practical.",
-                "current_grade": current_grade,
-                "current_percent": round(current_percent * 100, 2),
-                "needed_tens": "10+",
-                "target_grade": next_grade
+            if current_score >= target_avg:
+                predictions.append({
+                    "target_grade": target_grade,
+                    "needed_tens": 0,
+                    "reachable": True,
+                    "message": "Already reached"
+                })
+                continue
+            
+            # Calculate contribution from tests and final (these don't change)
+            fixed_contribution = 0.0
+            if test_grades:
+                test_avg = sum(test_grades) / len(test_grades)
+                fixed_contribution += test_avg * WEIGHT_TESTS
+            if final_grade is not None:
+                fixed_contribution += final_grade * WEIGHT_FINAL
+            
+            # Current assignments
+            current_assign_sum = sum(assign_grades) if assign_grades else 0
+            current_assign_count = len(assign_grades) if assign_grades else 0
+            
+            # Try adding perfect assignments until we reach target
+            n = 0
+            while n <= 20:
+                new_assign_avg = (current_assign_sum + 10 * n) / (current_assign_count + n) if (current_assign_count + n) > 0 else 10
+                new_weighted_score = new_assign_avg * WEIGHT_ASSIGNMENTS + fixed_contribution
+                
+                if new_weighted_score >= target_threshold * 10:
+                    break
+                n += 1
+            
+            predictions.append({
+                "target_grade": target_grade,
+                "needed_tens": n if n <= 20 else None,
+                "reachable": n <= 20
             })
         
         return JsonResponse({
-            "message": f"To reach grade {next_grade}, you need {n} additional perfect assignment(s) (10/10).",
+            "message": "Grade predictions with additional perfect assignments:",
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2),
-            "needed_tens": n,
-            "target_grade": next_grade
+            "predictions": predictions
         })
 
 
