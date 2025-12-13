@@ -338,6 +338,119 @@
             color: var(--color-text-heading);
         }
 
+        .weight-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .weight-input-container label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .weight-input-container input {
+            padding: 8px 12px;
+            border: 1px solid #233554;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            text-align: center;
+            background: white;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 80px;
+        }
+
+        .weight-input-container input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .weight-total {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: auto;
+        }
+
+        .weight-total.warning {
+            color: #ff9800;
+            font-weight: 600;
+        }
+
+        .weight-total.valid {
+            color: #4CAF50;
+        }
+
+        .assignment-subsection {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid #e5e5e5;
+            position: relative;
+        }
+
+        .assignment-subsection-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .assignment-subsection-title {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .assignment-subsection-title input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            background: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .assignment-subsection-title input[type="text"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .assignment-subsection-weight {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .assignment-subsection-weight label {
+            font-size: 13px;
+            color: #6c757d;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .assignment-subsection-weight input {
+            width: 70px;
+            padding: 8px 10px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+            background: #0A192F;
+            color: var(--color-text-heading);
+        }
+
         .calculate-btn {
             background: var(--color-accent);
             color: var(--color-bg-deep);
@@ -494,9 +607,19 @@
                             <span class="section-info" data-en="out of 10" data-kk="10-дан" data-ru="из 10">out of 10</span>
                         </div>
                     </div>
-                    <div class="grades-grid" id="assignmentsGrid">
-                        <button type="button" class="add-btn" onclick="addAssignment()">+</button>
+                    <div class="weight-input-container">
+                        <label data-en="Weight:" data-kk="Салмақ:" data-ru="Вес:">Weight:</label>
+                        <input type="number" id="weightAssignments" min="0" max="100" step="0.1" value="25" placeholder="25" readonly>
+                        <span class="percent-label">%</span>
+                        <span class="weight-total" id="assignmentsWeightStatus">(auto-calculated)</span>
                     </div>
+                    <div id="assignmentSubsections">
+                        <!-- Subsections will be added here -->
+                    </div>
+                    <button type="button" class="add-subsection-btn" onclick="addAssignmentSubsection()" data-en="+ Add Assignment Type" data-kk="+ Тапсырма түрін қосу" data-ru="+ Добавить тип задания">
+                        <span>+</span>
+                        <span data-en="Add Assignment Type" data-kk="Тапсырма түрін қосу" data-ru="Добавить тип задания">Add Assignment Type</span>
+                    </button>
                 </div>
 
                 <!-- Tests Section -->
@@ -508,7 +631,15 @@
                         </div>
                         <button type="button" class="add-btn" onclick="addTest()">+</button>
                     </div>
-                    <div id="testsContainer"></div>
+                    <div class="weight-input-container">
+                        <label data-en="Weight:" data-kk="Салмақ:" data-ru="Вес:">Weight:</label>
+                        <input type="number" id="weightTests" min="0" max="100" step="0.1" value="25" placeholder="25">
+                        <span class="percent-label">%</span>
+                        <span class="weight-total" id="testsWeightStatus"></span>
+                    </div>
+                    <div id="testsContainer">
+                        <!-- Default test will be added by JavaScript -->
+                    </div>
                     <div class="total-tests">
                         <label data-en="Total number of tests expected:" data-kk="Күтілетін тестілердің жалпы саны:" data-ru="Ожидаемое общее количество тестов:">Total number of tests expected:</label>
                         <input type="number" id="totalTests" min="0" placeholder="e.g., 4">
@@ -519,6 +650,12 @@
                 <div class="section">
                     <div class="section-header">
                         <div class="section-title" data-en="Final Exam" data-kk="Қорытынды емтихан" data-ru="Финальный экзамен">Final Exam</div>
+                    </div>
+                    <div class="weight-input-container">
+                        <label data-en="Weight:" data-kk="Салмақ:" data-ru="Вес:">Weight:</label>
+                        <input type="number" id="weightFinal" min="0" max="100" step="0.1" value="50" placeholder="50">
+                        <span class="percent-label">%</span>
+                        <span class="weight-total" id="finalWeightStatus"></span>
                     </div>
                     <div class="final-item">
                         <input type="number" id="finalGrade" placeholder="Your grade" step="0.01" data-placeholder-en="Your grade" data-placeholder-kk="Сіздің баға" data-placeholder-ru="Ваша оценка">
@@ -578,7 +715,10 @@
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
+            const activeBtn = document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
             
             updateLanguage();
         }
@@ -666,32 +806,183 @@
             }
         }
 
-        // Assignment management
-        let assignmentCount = 0;
+        // Weight management (percentages)
+        function updateWeightsTotal() {
+            const weightAssignments = parseFloat(document.getElementById('weightAssignments').value) || 0;
+            const weightTests = parseFloat(document.getElementById('weightTests').value) || 0;
+            const weightFinal = parseFloat(document.getElementById('weightFinal').value) || 0;
+            const total = weightAssignments + weightTests + weightFinal;
+            
+            // Update status for each section
+            updateWeightStatus('assignmentsWeightStatus', weightAssignments);
+            updateWeightStatus('testsWeightStatus', weightTests);
+            updateWeightStatus('finalWeightStatus', weightFinal);
+            
+            // Check if total is 100%
+            const allStatusElements = [
+                document.getElementById('assignmentsWeightStatus'),
+                document.getElementById('testsWeightStatus'),
+                document.getElementById('finalWeightStatus')
+            ];
+            
+            if (Math.abs(total - 100) < 0.1) {
+                allStatusElements.forEach(el => {
+                    if (el) {
+                        el.textContent = '✓';
+                        el.className = 'weight-total valid';
+                    }
+                });
+            } else {
+                allStatusElements.forEach(el => {
+                    if (el) {
+                        el.textContent = `Total: ${total.toFixed(1)}%`;
+                        el.className = 'weight-total warning';
+                    }
+                });
+            }
+        }
         
-        function addAssignment() {
-            const container = document.getElementById('assignmentsGrid');
+        function updateWeightStatus(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            if (value < 0 || value > 100) {
+                element.textContent = 'Invalid';
+                element.className = 'weight-total warning';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            ['weightAssignments', 'weightTests', 'weightFinal'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', updateWeightsTotal);
+                }
+            });
+            updateWeightsTotal();
+        });
+
+        // Assignment subsection management
+        let subsectionCount = 0;
+        
+        function updateOverallAssignmentWeight() {
+            const subsections = document.querySelectorAll('.assignment-subsection');
+            let totalWeight = 0;
+            subsections.forEach(subsection => {
+                const weight = parseFloat(subsection.querySelector('.subsection-weight-input').value) || 0;
+                totalWeight += weight;
+            });
+            document.getElementById('weightAssignments').value = totalWeight.toFixed(1);
+            updateWeightsTotal(); // Update the main weights total
+        }
+        
+        function addAssignmentSubsection() {
+            const container = document.getElementById('assignmentSubsections');
+            const existingSubsections = container.querySelectorAll('.assignment-subsection');
+            
+            // Calculate equal weight distribution
+            let newWeight = 25; // Default weight for new subsection
+            if (existingSubsections.length > 0) {
+                // Get current total weight
+                let currentTotal = 0;
+                existingSubsections.forEach(subsection => {
+                    const weight = parseFloat(subsection.querySelector('.subsection-weight-input').value) || 0;
+                    currentTotal += weight;
+                });
+                
+                // Use a default weight for new subsection (e.g., average of existing or fixed value)
+                newWeight = Math.max(10, currentTotal / existingSubsections.length);
+            }
+            
+            subsectionCount++;
+            const subsection = document.createElement('div');
+            subsection.className = 'assignment-subsection';
+            subsection.dataset.subsectionId = subsectionCount;
+            const subsectionName = `Type ${subsectionCount}`;
+            subsection.innerHTML = `
+                <button type="button" class="remove-btn" onclick="removeAssignmentSubsection(this)">×</button>
+                <div class="assignment-subsection-header">
+                    <div class="assignment-subsection-title">
+                        <input type="text" class="subsection-name" placeholder="Type name (e.g., Homework)" value="${subsectionName}" data-placeholder-en="Type name (e.g., Homework)" data-placeholder-kk="Түр атауы (мысалы, Үй тапсырмасы)" data-placeholder-ru="Название типа (например, Домашнее задание)">
+                    </div>
+                    <div class="assignment-subsection-weight">
+                        <label data-en="Weight:" data-kk="Салмақ:" data-ru="Вес:">Weight:</label>
+                        <input type="number" class="subsection-weight-input" min="0" max="100" step="0.1" value="${newWeight.toFixed(1)}" placeholder="Weight" oninput="updateOverallAssignmentWeight()">
+                        <span class="percent-label">%</span>
+                    </div>
+                </div>
+                <div class="assignment-subsection-grades" data-subsection-grades="${subsectionCount}">
+                    <div class="grade-item">
+                        <input type="number" min="0" max="10" step="0.1" placeholder="0" value="0" oninput="updateAssignmentColor(this)" onkeydown="handleAssignmentKeydown(event, this)">
+                        <button type="button" class="remove-btn" onclick="removeGradeFromSubsection(this)" style="opacity: 0; pointer-events: none;">×</button>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addGradeToSubsection(${subsectionCount})" style="grid-column: span 1;">+</button>
+                </div>
+            `;
+            container.appendChild(subsection);
+            updateOverallAssignmentWeight();
+        }
+        
+        function removeAssignmentSubsection(btn) {
+            const container = document.getElementById('assignmentSubsections');
+            const subsections = container.querySelectorAll('.assignment-subsection');
+            
+            if (subsections.length > 1) {
+                btn.closest('.assignment-subsection').remove();
+                updateOverallAssignmentWeight();
+            }
+        }
+        
+        function addGradeToSubsection(subsectionId) {
+            const subsection = document.querySelector(`.assignment-subsection[data-subsection-id="${subsectionId}"]`);
+            if (!subsection) return;
+            
+            const gradesContainer = subsection.querySelector(`[data-subsection-grades="${subsectionId}"]`);
+            const addBtn = gradesContainer.querySelector('.add-btn');
             const item = document.createElement('div');
             item.className = 'grade-item';
             item.innerHTML = `
-                <input type="number" min="0" max="10" step="0.1" placeholder="0" 
+                <input type="number" min="0" max="10" step="0.1" placeholder="0" value="0"
                        oninput="updateAssignmentColor(this)" onkeydown="handleAssignmentKeydown(event, this)">
-                <button type="button" class="remove-btn" onclick="removeAssignment(this)">×</button>
+                <button type="button" class="remove-btn" onclick="removeGradeFromSubsection(this)">×</button>
             `;
-            container.insertBefore(item, container.lastElementChild);
-            assignmentCount++;
+            gradesContainer.insertBefore(item, addBtn);
+        }
+        
+        function removeGradeFromSubsection(btn) {
+            const gradesContainer = btn.closest('.assignment-subsection-grades');
+            const gradeItems = gradesContainer.querySelectorAll('.grade-item');
+            // Don't remove if it's the last grade item (keep at least one)
+            if (gradeItems.length > 1) {
+                btn.parentElement.remove();
+            }
         }
         
         function handleAssignmentKeydown(event, input) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                addAssignment();
+                const subsection = input.closest('.assignment-subsection');
+                if (subsection) {
+                    const subsectionId = parseInt(subsection.dataset.subsectionId);
+                    addGradeToSubsection(subsectionId);
+                }
             }
         }
         
-        function removeAssignment(btn) {
-            btn.parentElement.remove();
-            assignmentCount--;
+        function getAssignmentSubsections() {
+            const subsections = [];
+            document.querySelectorAll('.assignment-subsection').forEach(subsection => {
+                const name = subsection.querySelector('.subsection-name').value.trim() || 'Default';
+                const weight = parseFloat(subsection.querySelector('.subsection-weight-input').value) || 100;
+                const grades = Array.from(subsection.querySelectorAll('.grade-item input[type="number"]'))
+                    .map(input => {
+                        const value = parseFloat(input.value);
+                        return isNaN(value) ? null : value;
+                    })
+                    .filter(grade => grade !== null && grade >= 0);
+                subsections.push({ name, weight, grades });
+            });
+            return subsections;
         }
         
         function updateAssignmentColor(input) {
@@ -746,6 +1037,17 @@
 
         // Form submission
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure at least one assignment subsection exists when the page loads
+            if (!document.querySelector('.assignment-subsection')) {
+                addAssignmentSubsection();
+            }
+
+            // Ensure there is a visible test row and the count indicator is accurate
+            if (testCount === 0) {
+                addTest();
+            }
+            updateTestCount();
+
             const gradeForm = document.getElementById('gradeForm');
             if (!gradeForm) return;
             
@@ -774,11 +1076,6 @@
                 submitBtn.disabled = true;
         
                 try {
-                    // Get assignment grades
-                    const assignmentGrades = Array.from(document.querySelectorAll('#assignmentsGrid .grade-item input'))
-                        .map(input => parseFloat(input.value))
-                        .filter(grade => !isNaN(grade) && grade > 0);
-                    
                     // Get test grades
                     const testGrades = Array.from(document.querySelectorAll('#testsContainer .test-item'))
                         .map(item => {
@@ -794,17 +1091,45 @@
                     const finalMax = document.getElementById('finalMax').value.trim() ? parseFloat(document.getElementById('finalMax').value) : '';
                     const totalTests = parseInt(document.getElementById('totalTests').value) || testGrades.length;
                     
+                    // Get weights (stay in percentages for backend)
+                    const weightAssignmentsPercent = parseFloat(document.getElementById('weightAssignments').value) || 25;
+                    const weightTestsPercent = parseFloat(document.getElementById('weightTests').value) || 25;
+                    const weightFinalPercent = parseFloat(document.getElementById('weightFinal').value) || 50;
+                    
+                    // Get assignment subsections
+                    const assignmentSubsections = getAssignmentSubsections();
+                    
+                    // Build assignment data structure for backend
+                    const assignmentGrades = [];
+                    const assignmentTypes = [];
+                    const assignmentTypeWeights = {};
+                    
+                    if (assignmentSubsections.length > 0) {
+                        assignmentSubsections.forEach(subsection => {
+                            subsection.grades.forEach(grade => {
+                                assignmentGrades.push(grade);
+                                assignmentTypes.push(subsection.name);
+                            });
+                            assignmentTypeWeights[subsection.name] = subsection.weight;
+                        });
+                    }
+                    
                     // Get current language
                     const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
                     
                     // Prepare form data
                     const formData = new FormData();
-                    formData.append('grades', assignmentGrades.join(','));
+                    formData.append('grades', assignmentGrades.length > 0 ? assignmentGrades.join(',') : '');
+                    formData.append('assignment_types', assignmentTypes.length > 0 ? assignmentTypes.join(',') : '');
+                    formData.append('assignment_type_weights', JSON.stringify(assignmentTypeWeights));
                     formData.append('test_grades', testGrades.map(t => t.grade).join(','));
                     formData.append('test_maxes', testGrades.map(t => t.max).join(','));
                     formData.append('final_grade', finalGrade);
                     formData.append('final_max', finalMax);
                     formData.append('total_tests', totalTests);
+                    formData.append('weight_assignments', weightAssignmentsPercent);
+                    formData.append('weight_tests', weightTestsPercent);
+                    formData.append('weight_final', weightFinalPercent);
                     formData.append('language', currentLang);
                     
                     // Get CSRF token from the form
@@ -925,9 +1250,6 @@
                 }
             });
         });
-
-        // Initialize with one assignment field
-        addAssignment();
     </script>
 </body>
 </html>
