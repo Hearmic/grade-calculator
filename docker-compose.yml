@@ -20,22 +20,11 @@ services:
 
   web:
     build: .
-    container_name: kundelik_web
+    container_name: gradepredict
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 app.wsgi:application"
-    environment:
-      DEBUG: ${DEBUG:-False}
-      SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      USE_POSTGRES: ${USE_POSTGRES:-True}
-      DB_NAME: ${DB_NAME:-kundelik_predict}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
     volumes:
       - ./app:/app
       - static_volume:/app/staticfiles
@@ -45,13 +34,17 @@ services:
     networks:
       - kundelik_network
     restart: unless-stopped
+    env_file:
+      - .env
 
   nginx:
     image: nginx:alpine
-    container_name: kundelik_nginx
+    container_name: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - static_volume:/app/staticfiles:ro
+      - /etc/letsencrypt/live/:/etc/letsencrypt/live/:ro
+      - /etc/letsencrypt/archive/:/etc/letsencrypt/archive/:ro
     ports:
       - "80:80"
       - "443:443"
