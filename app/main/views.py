@@ -22,6 +22,11 @@ DEFAULT_WEIGHT_ASSIGNMENTS = 0.25
 DEFAULT_WEIGHT_TESTS = 0.25
 DEFAULT_WEIGHT_FINAL = 0.5
 
+# Default maximum values for different assessment types
+DEFAULT_MAX_ASSIGNMENT = 10.0
+DEFAULT_MAX_TEST = 10.0
+DEFAULT_MAX_FINAL = 10.0
+
 def home(request):
     return render(request, "main/home.html")
 
@@ -104,33 +109,37 @@ def calculate_prediction(request):
             # Both grades and maxes provided - normalize to 0-10 scale
             for grade, max_val in zip(test_grades_raw, test_maxes):
                 if max_val > 0:
+                    if grade > max_val:
+                        return JsonResponse({"message": get_translation('grade_exceeds_max', language)}, status=400)
                     normalized = (grade / max_val) * 10
                     test_grades.append(normalized)
                 else:
                     return JsonResponse({"message": get_translation('invalid_grades', language)}, status=400)
         else:
             # If maxes not provided or don't match, assume grades are already on 0-10 scale
-            test_grades = test_grades_raw
+            test_grades = [min(grade, 10.0) for grade in test_grades_raw]
     
     # Normalize final grade to 0-10 scale
     final_grade = None
     if final_grade_raw is not None:
         if final_max is not None and final_max > 0:
+            if final_grade_raw > final_max:
+                return JsonResponse({"message": get_translation('grade_exceeds_max', language)}, status=400)
             final_grade = (final_grade_raw / final_max) * 10
         else:
             # If max not provided, assume grade is already on 0-10 scale
-            final_grade = final_grade_raw
+            final_grade = min(final_grade_raw, 10.0)
     
     # Validate input ranges (all should be 0-10 after normalization)
     for grade in assign_grades:
-        if grade < 0 or grade > 10:
+        if grade < 0:
             return JsonResponse({"message": get_translation('invalid_grades', language)}, status=400)
     
     for grade in test_grades:
-        if grade < 0 or grade > 10:
+        if grade < 0:
             return JsonResponse({"message": get_translation('invalid_grades', language)}, status=400)
     
-    if final_grade is not None and (final_grade < 0 or final_grade > 10):
+    if final_grade is not None and final_grade < 0:
         return JsonResponse({"message": get_translation('invalid_grades', language)}, status=400)
     
     # Calculate completed tests count

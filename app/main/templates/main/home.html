@@ -243,6 +243,7 @@
             align-items: center;
             gap: 12px;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .test-item input, .final-item input {
@@ -379,20 +380,30 @@
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
 
-        .assignment-subsection-weight {
+        .assignment-subsection-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .assignment-subsection-weight,
+        .assignment-subsection-max {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .assignment-subsection-weight label {
+        .assignment-subsection-weight label,
+        .assignment-subsection-max label {
             font-size: 13px;
             color: #6c757d;
             white-space: nowrap;
             font-weight: 500;
         }
 
-        .assignment-subsection-weight input {
+        .assignment-subsection-weight input,
+        .assignment-subsection-max input {
             width: 70px;
             padding: 8px 10px;
             border: 1px solid #e5e5e5;
@@ -404,7 +415,23 @@
             transition: all 0.3s ease;
         }
 
-        .assignment-subsection-weight input:focus {
+        .grade-item .remove-btn {
+            top: 8px;
+            right: 8px;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .test-item .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .assignment-subsection-weight input:focus,
+        .assignment-subsection-max input:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
@@ -758,6 +785,23 @@
             const locale = localeMap[lang] || 'en-US';
             return new Intl.NumberFormat(locale, options).format(num);
         }
+
+        function getLetterFromNumericGrade(grade) {
+            const mapping = {
+                5: 'A',
+                4: 'B',
+                3: 'C',
+                2: 'F'
+            };
+            const numericGrade = typeof grade === 'string' ? parseFloat(grade) : grade;
+            return mapping[Math.round(numericGrade)] || grade;
+        }
+
+        function getGradeLabelText(lang) {
+            if (lang === 'kk') return 'Баға';
+            if (lang === 'ru') return 'Оценка';
+            return 'Grade';
+        }
         
         // Automatic language detection
         function detectBrowserLanguage() {
@@ -857,6 +901,13 @@
         // Assignment subsection management
         let subsectionCount = 0;
         
+        function getSubsectionMax(subsection) {
+            if (!subsection) return 10;
+            const maxInput = subsection.querySelector('.subsection-max-input');
+            const max = parseFloat(maxInput?.value);
+            return max > 0 ? max : 10;
+        }
+        
         function updateOverallAssignmentWeight() {
             const subsections = document.querySelectorAll('.assignment-subsection');
             let totalWeight = 0;
@@ -868,21 +919,43 @@
             updateWeightsTotal(); // Update the main weights total
         }
         
+        function handleSubsectionMaxChange(input) {
+            const subsection = input.closest('.assignment-subsection');
+            if (!subsection) return;
+            const max = getSubsectionMax(subsection);
+            subsection.querySelectorAll('.grade-item input[type="number"]').forEach(gradeInput => {
+                gradeInput.setAttribute('max', max);
+                const value = parseFloat(gradeInput.value);
+                if (!isNaN(value) && value > max) {
+                    gradeInput.value = max;
+                }
+                updateAssignmentColor(gradeInput);
+            });
+        }
+        
+        function createGradeItem(subsectionId) {
+            const item = document.createElement('div');
+            item.className = 'grade-item';
+            item.innerHTML = `
+                <input type="number" min="0" max="10" step="0.1" placeholder="0" value="0"
+                       oninput="updateAssignmentColor(this)" onkeydown="handleAssignmentKeydown(event, this)">
+                <button type="button" class="remove-btn" onclick="removeGradeFromSubsection(this)">×</button>
+            `;
+            item.dataset.subsectionId = subsectionId;
+            return item;
+        }
+        
         function addAssignmentSubsection() {
             const container = document.getElementById('assignmentSubsections');
             const existingSubsections = container.querySelectorAll('.assignment-subsection');
             
-            // Calculate equal weight distribution
-            let newWeight = 25; // Default weight for new subsection
+            let newWeight = 25;
             if (existingSubsections.length > 0) {
-                // Get current total weight
                 let currentTotal = 0;
                 existingSubsections.forEach(subsection => {
                     const weight = parseFloat(subsection.querySelector('.subsection-weight-input').value) || 0;
                     currentTotal += weight;
                 });
-                
-                // Use a default weight for new subsection (e.g., average of existing or fixed value)
                 newWeight = Math.max(10, currentTotal / existingSubsections.length);
             }
             
@@ -891,27 +964,34 @@
             subsection.className = 'assignment-subsection';
             subsection.dataset.subsectionId = subsectionCount;
             const subsectionName = `Type ${subsectionCount}`;
+            const defaultMax = 10;
             subsection.innerHTML = `
                 <button type="button" class="remove-btn" onclick="removeAssignmentSubsection(this)">×</button>
                 <div class="assignment-subsection-header">
                     <div class="assignment-subsection-title">
                         <input type="text" class="subsection-name" placeholder="Type name (e.g., Homework)" value="${subsectionName}" data-placeholder-en="Type name (e.g., Homework)" data-placeholder-kk="Түр атауы (мысалы, Үй тапсырмасы)" data-placeholder-ru="Название типа (например, Домашнее задание)">
                     </div>
-                    <div class="assignment-subsection-weight">
-                        <label data-en="Weight:" data-kk="Салмақ:" data-ru="Вес:">Weight:</label>
-                        <input type="number" class="subsection-weight-input" min="0" max="100" step="0.1" value="${newWeight.toFixed(1)}" placeholder="Weight" oninput="updateOverallAssignmentWeight()">
-                        <span class="percent-label">%</span>
+                    <div class="assignment-subsection-controls">
+                        <div class="assignment-subsection-weight">
+                            <label data-en="Weight:" data-kk="Салмақ:" data-ru="Вес:">Weight:</label>
+                            <input type="number" class="subsection-weight-input" min="0" max="100" step="0.1" value="${newWeight.toFixed(1)}" placeholder="Weight" oninput="updateOverallAssignmentWeight()">
+                            <span class="percent-label">%</span>
+                        </div>
+                        <div class="assignment-subsection-max">
+                            <label data-en="Out of:" data-kk="Максимум:" data-ru="Максимум:">Out of:</label>
+                            <input type="number" class="subsection-max-input" min="1" step="0.1" value="${defaultMax.toFixed(1)}" oninput="handleSubsectionMaxChange(this)">
+                        </div>
                     </div>
                 </div>
                 <div class="assignment-subsection-grades" data-subsection-grades="${subsectionCount}">
-                    <div class="grade-item">
-                        <input type="number" min="0" max="10" step="0.1" placeholder="0" value="0" oninput="updateAssignmentColor(this)" onkeydown="handleAssignmentKeydown(event, this)">
-                        <button type="button" class="remove-btn" onclick="removeGradeFromSubsection(this)" style="opacity: 0; pointer-events: none;">×</button>
-                    </div>
                     <button type="button" class="add-btn" onclick="addGradeToSubsection(${subsectionCount})" style="grid-column: span 1;">+</button>
                 </div>
             `;
             container.appendChild(subsection);
+            const gradesContainer = subsection.querySelector(`[data-subsection-grades="${subsectionCount}"]`);
+            const addBtn = gradesContainer.querySelector('.add-btn');
+            gradesContainer.insertBefore(createGradeItem(subsectionCount), addBtn);
+            handleSubsectionMaxChange(subsection.querySelector('.subsection-max-input'));
             updateOverallAssignmentWeight();
         }
         
@@ -931,20 +1011,14 @@
             
             const gradesContainer = subsection.querySelector(`[data-subsection-grades="${subsectionId}"]`);
             const addBtn = gradesContainer.querySelector('.add-btn');
-            const item = document.createElement('div');
-            item.className = 'grade-item';
-            item.innerHTML = `
-                <input type="number" min="0" max="10" step="0.1" placeholder="0" value="0"
-                       oninput="updateAssignmentColor(this)" onkeydown="handleAssignmentKeydown(event, this)">
-                <button type="button" class="remove-btn" onclick="removeGradeFromSubsection(this)">×</button>
-            `;
+            const item = createGradeItem(subsectionId);
             gradesContainer.insertBefore(item, addBtn);
+            handleSubsectionMaxChange(subsection.querySelector('.subsection-max-input'));
         }
         
         function removeGradeFromSubsection(btn) {
             const gradesContainer = btn.closest('.assignment-subsection-grades');
             const gradeItems = gradesContainer.querySelectorAll('.grade-item');
-            // Don't remove if it's the last grade item (keep at least one)
             if (gradeItems.length > 1) {
                 btn.parentElement.remove();
             }
@@ -966,13 +1040,14 @@
             document.querySelectorAll('.assignment-subsection').forEach(subsection => {
                 const name = subsection.querySelector('.subsection-name').value.trim() || 'Default';
                 const weight = parseFloat(subsection.querySelector('.subsection-weight-input').value) || 100;
+                const max = getSubsectionMax(subsection);
                 const grades = Array.from(subsection.querySelectorAll('.grade-item input[type="number"]'))
                     .map(input => {
                         const value = parseFloat(input.value);
                         return isNaN(value) ? null : value;
                     })
                     .filter(grade => grade !== null && grade >= 0);
-                subsections.push({ name, weight, grades });
+                subsections.push({ name, weight, max, grades });
             });
             return subsections;
         }
@@ -980,20 +1055,32 @@
         function updateAssignmentColor(input) {
             const value = parseFloat(input.value);
             const item = input.parentElement;
+            const subsection = input.closest('.assignment-subsection');
+            const max = getSubsectionMax(subsection);
+            const normalized = (!isNaN(value) && max > 0) ? (value / max) * 10 : value;
             
             item.classList.remove('green', 'orange', 'red');
             
-            if (value > 8) {
+            if (normalized > 8) {
                 item.classList.add('green');
-            } else if (value > 5) {
+            } else if (normalized > 5) {
                 item.classList.add('orange');
-            } else if (value > 0) {
+            } else if (normalized > 0) {
                 item.classList.add('red');
             }
         }
 
         // Test management
         let testCount = 0;
+        
+        function syncTotalTestsInput(force = false) {
+            const totalTestsInput = document.getElementById('totalTests');
+            if (!totalTestsInput) return;
+            const currentValue = parseInt(totalTestsInput.value, 10);
+            if (force || isNaN(currentValue) || currentValue < testCount) {
+                totalTestsInput.value = testCount;
+            }
+        }
         
         function addTest() {
             const container = document.getElementById('testsContainer');
@@ -1008,12 +1095,17 @@
             container.appendChild(item);
             testCount++;
             updateTestCount();
+            syncTotalTestsInput(true);
         }
         
         function removeTest(btn) {
             btn.parentElement.remove();
             testCount--;
+            if (testCount < 0) {
+                testCount = 0;
+            }
             updateTestCount();
+            syncTotalTestsInput();
         }
         
         function updateTestCount() {
@@ -1095,6 +1187,7 @@
                     const assignmentGrades = [];
                     const assignmentTypes = [];
                     const assignmentTypeWeights = {};
+                    const assignmentTypeMaxes = {};
                     
                     if (assignmentSubsections.length > 0) {
                         assignmentSubsections.forEach(subsection => {
@@ -1103,6 +1196,7 @@
                                 assignmentTypes.push(subsection.name);
                             });
                             assignmentTypeWeights[subsection.name] = subsection.weight;
+                            assignmentTypeMaxes[subsection.name] = subsection.max;
                         });
                     }
                     
@@ -1114,6 +1208,7 @@
                     formData.append('grades', assignmentGrades.length > 0 ? assignmentGrades.join(',') : '');
                     formData.append('assignment_types', assignmentTypes.length > 0 ? assignmentTypes.join(',') : '');
                     formData.append('assignment_type_weights', JSON.stringify(assignmentTypeWeights));
+                    formData.append('assignment_type_maxes', JSON.stringify(assignmentTypeMaxes));
                     formData.append('test_grades', testGrades.map(t => t.grade).join(','));
                     formData.append('test_maxes', testGrades.map(t => t.max).join(','));
                     formData.append('final_grade', finalGrade);
@@ -1151,21 +1246,10 @@
                     if (result.error) {
                         resultMessage.textContent = 'Error';
                         resultDetails.textContent = result.error;
-                    } else {
-                        resultMessage.textContent = result.message;
-                        
-                        // Get language for formatting
-                        const lang = result.language || 'en';
-                        
-                        // Build detailed results
-                        let detailsHTML = '<div style="margin-top: 15px;">';
-                        
-                        // Show current grade and percent
-                        detailsHTML += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">';
-                        if (result.current_grade !== undefined) {
+                            const currentGradeDisplay = useLetterGrades ? getLetterFromNumericGrade(result.current_grade) : result.current_grade;
                             detailsHTML += `<div style="text-align: center; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Current Grade</div>
-                                <div style="font-size: 24px; font-weight: bold; color: #667eea;">${result.current_grade}</div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">${gradeLabelText}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #667eea;">${currentGradeDisplay}</div>
                             </div>`;
                         }
                         if (result.current_percent !== undefined) {
@@ -1186,11 +1270,12 @@
                                 const gradeColor = pred.target_grade === 5 ? '#764ba2' : pred.target_grade === 4 ? '#667eea' : '#999';
                                 const borderColor = pred.reachable ? '#4CAF50' : '#ff9800';
                                 const bgColor = pred.reachable ? '#f1f8f4' : '#fff3e6';
+                                const gradeValueDisplay = useLetterGrades ? getLetterFromNumericGrade(pred.target_grade) : pred.target_grade;
                                 
                                 detailsHTML += `<div style="padding: 12px; background: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 4px; margin-bottom: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
-                                            <div style="font-size: 14px; font-weight: bold; color: ${gradeColor};">Grade ${pred.target_grade}</div>`;
+                                            <div style="font-size: 14px; font-weight: bold; color: ${gradeColor};">${gradeLabelText} ${gradeValueDisplay}</div>`;
                                 
                                 // If final exam percentage is specifically calculated
                                 if (pred.needed_final_percent !== undefined) {

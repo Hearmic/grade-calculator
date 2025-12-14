@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:alpine
     container_name: kundelik_db
     environment:
       POSTGRES_DB: ${DB_NAME:-kundelik_predict}
-      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRdockerES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
