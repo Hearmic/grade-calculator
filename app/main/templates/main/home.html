@@ -3,8 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade Prediction - Kundelik.kz</title>
+    <title>Grade Prediction</title>
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'main/images/favicon.ico' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7380460452331152"
+     crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
     <style>
+        /* --- CSS VARIABLES (The DNA of your Brand) --- */
+        :root {
+            /* Color Palette - The "McLaren" Tech Vibe */
+            --color-bg-deep: #0A192F;      /* Deep Void Blue (Main Background) */
+            --color-bg-surface: #112240;   /* Lighter Blue (Cards/Sections) */
+            --color-accent: #FF8000;       /* Apex Orange (Primary Action) */
+            --color-accent-hover: #CC6600; /* Darker Orange for interactions */
+            
+            /* Text Colors */
+            --color-text-main: #CCD6F6;    /* Off-white for readability */
+            --color-text-heading: #FFFFFF; /* Pure white for confident headers */
+            --color-text-muted: #8892B0;   /* Grey-blue for secondary info */
+            
+            /* Typography */
+            --font-display: 'Space Grotesk', sans-serif; /* Headlines - Modern & Geometric */
+            --font-body: 'Inter', sans-serif;            /* Body - Clean & Readable */
+            --font-code: 'JetBrains Mono', monospace;    /* Data/Code - Tech Savvy */
+            
+            /* Spacing & Rounding */
+            --radius-sm: 4px;
+            --radius-md: 8px;   /* "Welcoming" rounded corners */
+            --radius-lg: 16px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,20 +44,23 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--color-bg-deep);
+            color: var(--color-text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
             min-height: 100vh;
-            padding: 60px 20px;
-            color: #1a1a1a;
+            padding: 40px 20px;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            background: var(--color-bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             animation: fadeInUp 0.6s ease-out;
+            border: 1px solid #233554;
         }
 
         @keyframes fadeInUp {
@@ -35,11 +70,12 @@
 
         .header {
             padding: 48px 40px 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0A192F 0%, #112240 100%);
             position: relative;
             overflow: hidden;
-            color: white;
+            color: var(--color-text-heading);
             text-align: center;
+            border-bottom: 1px solid #233554;
         }
 
         .language-switcher {
@@ -53,26 +89,27 @@
 
         .lang-btn {
             padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: white;
-            border-radius: 6px;
+            background: rgba(255, 128, 0, 0.1);
+            border: 1px solid var(--color-accent);
+            color: var(--color-accent);
+            border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
             transition: all 0.3s ease;
             text-transform: uppercase;
+            font-family: var(--font-code);
         }
 
         .lang-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 128, 0, 0.2);
+            border-color: var(--color-accent-hover);
         }
 
         .lang-btn.active {
-            background: rgba(255, 255, 255, 0.9);
-            color: #667eea;
-            border-color: white;
+            background: var(--color-accent);
+            color: var(--color-bg-deep);
+            border-color: var(--color-accent);
         }
 
         .header h1 {
@@ -81,6 +118,7 @@
             margin-bottom: 12px;
             position: relative;
             z-index: 1;
+            font-family: var(--font-display);
         }
 
         .header p {
@@ -90,6 +128,7 @@
             margin: 0 auto;
             position: relative;
             z-index: 1;
+            color: var(--color-text-muted);
         }
 
         .content {
@@ -114,7 +153,7 @@
         .section {
             margin-bottom: 36px;
             padding-bottom: 36px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #233554;
             animation: fadeIn 0.5s ease-out backwards;
         }
 
@@ -134,18 +173,21 @@
         .section-title {
             font-size: 17px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--color-accent);
+            font-family: var(--font-code);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .section-info {
             font-size: 13px;
-            color: #737373;
+            color: var(--color-text-muted);
             margin-left: 8px;
         }
 
         .add-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--color-accent);
+            color: var(--color-bg-deep);
             border: none;
             width: 32px;
             height: 32px;
@@ -155,12 +197,14 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 128, 0, 0.3);
             transition: all 0.3s ease;
+            font-weight: 700;
         }
 
         .add-btn:hover {
             transform: scale(1.1);
+            background: var(--color-accent-hover);
         }
 
         .grades-grid {
@@ -171,32 +215,30 @@
         }
 
         .grade-item {
-            background: #f8f9fa;
-            border-radius: 8px;
+            background: #0d1f3a;
+            border-radius: var(--radius-md);
             padding: 12px 8px;
             text-align: center;
             font-weight: 500;
             transition: all 0.3s ease;
             position: relative;
-            border: 1px solid #e9ecef;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            border: 1px solid #233554;
+            color: var(--color-text-heading);
         }
 
         .grade-item.green {
-            background: #e6f7e6;
-            border-color: #a3e0a3;
+            background: rgba(76, 175, 80, 0.1);
+            border-color: #4CAF50;
         }
 
         .grade-item.orange {
-            background: #fff3e6;
-            border-color: #ffcc99;
+            background: rgba(255, 128, 0, 0.1);
+            border-color: var(--color-accent);
         }
 
         .grade-item.red {
-            background: #ffebee;
-            border-color: #ffb3b3;
+            background: rgba(244, 67, 54, 0.1);
+            border-color: #f44336;
         }
 
         .grade-item input {
@@ -207,13 +249,14 @@
             font-size: 15px;
             font-weight: 500;
             outline: none;
+            color: var(--color-text-heading);
         }
 
         .remove-btn {
             position: absolute;
             top: -8px;
             right: -8px;
-            background: #ff4d4f;
+            background: #f44336;
             color: white;
             border: none;
             width: 20px;
@@ -235,38 +278,40 @@
         }
 
         .test-item, .final-item {
-            background: #f8f9fa;
-            border-radius: 8px;
+            background: #0d1f3a;
+            border-radius: var(--radius-md);
             padding: 16px;
             margin-top: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
             transition: all 0.3s ease;
-            position: relative;
+            border: 1px solid #233554;
         }
 
         .test-item input, .final-item input {
             flex: 1;
             min-width: 80px;
             padding: 10px 14px;
-            border: 1px solid #e5e5e5;
-            border-radius: 6px;
+            border: 1px solid #233554;
+            border-radius: var(--radius-md);
             font-size: 15px;
             text-align: center;
-            background: white;
+            background: #0A192F;
             outline: none;
             transition: all 0.3s ease;
+            color: var(--color-text-heading);
+            font-family: var(--font-body);
         }
 
         .test-item input:focus, .final-item input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(255, 128, 0, 0.2);
         }
 
         .slash {
             font-size: 18px;
-            color: #6c757d;
+            color: var(--color-text-muted);
             font-weight: 500;
         }
 
@@ -279,16 +324,18 @@
 
         .total-tests label {
             font-size: 14px;
-            color: #6c757d;
+            color: var(--color-text-muted);
         }
 
         .total-tests input {
             padding: 8px 12px;
-            border: 1px solid #e5e5e5;
-            border-radius: 6px;
+            border: 1px solid #233554;
+            border-radius: var(--radius-md);
             font-size: 14px;
             width: 80px;
             text-align: center;
+            background: #0A192F;
+            color: var(--color-text-heading);
         }
 
         .weight-input-container {
@@ -310,8 +357,8 @@
 
         .weight-input-container input {
             padding: 8px 12px;
-            border: 1px solid #e5e5e5;
-            border-radius: 6px;
+            border: 1px solid #233554;
+            border-radius: var(--radius-md);
             font-size: 14px;
             text-align: center;
             background: white;
@@ -410,77 +457,16 @@
             border-radius: 6px;
             font-size: 13px;
             text-align: center;
-            background: white;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .grade-item .remove-btn {
-            top: 8px;
-            right: 8px;
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .test-item .remove-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .assignment-subsection-weight input:focus,
-        .assignment-subsection-max input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-        }
-
-        .assignment-subsection .remove-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .assignment-subsection-grades {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            gap: 10px;
-            margin-top: 0;
-        }
-        
-        .assignment-subsection-grades .add-btn {
-            grid-column: span 1;
-        }
-
-        .add-subsection-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .add-subsection-btn:hover {
-            background: #5568d3;
+            background: #0A192F;
+            color: var(--color-text-heading);
         }
 
         .calculate-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--color-accent);
+            color: var(--color-bg-deep);
             border: none;
             padding: 14px 28px;
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -488,44 +474,49 @@
             width: 100%;
             margin: 30px 0;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 128, 0, 0.3);
+            font-family: var(--font-code);
         }
 
         .calculate-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 128, 0, 0.4);
+            background: var(--color-accent-hover);
         }
 
         .result {
-            background: #f8f9fa;
-            border-radius: 8px;
+            background: #0d1f3a;
+            border-radius: var(--radius-md);
             padding: 20px;
             margin-top: 20px;
             text-align: center;
             display: none;
             animation: fadeIn 0.5s ease-out;
+            border: 1px solid #233554;
         }
 
         .result-message {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #1a1a1a;
+            color: var(--color-accent);
+            font-family: var(--font-display);
         }
 
         .result-details {
             font-size: 14px;
-            color: #6c757d;
+            color: var(--color-text-muted);
             line-height: 1.6;
         }
 
         .ad-container {
             margin: 25px 0;
             text-align: center;
-            background: #f8f9fa;
+            background: #0d1f3a;
             padding: 15px;
-            border-radius: 8px;
-            border: 1px dashed #e5e5e5;
+            border-radius: var(--radius-md);
+            border: 1px dashed #233554;
+            color: var(--color-text-muted);
         }
 
         @media (max-width: 480px) {
@@ -575,9 +566,9 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 128, 0, 0.3);
             border-radius: 50%;
-            border-top-color: #fff;
+            border-top-color: var(--color-bg-deep);
             animation: spin 1s ease-in-out infinite;
             margin-right: 8px;
             vertical-align: middle;
