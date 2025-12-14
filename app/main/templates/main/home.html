@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade Prediction</title>
+    <title>Grade Prediction Calculator - Calculate Your Target Grade</title>
+    <meta name="description" content="Free grade prediction calculator. Calculate what grades you need to reach your target. Supports letter grades (A-F), percentage calculations, and multiple assessment types.">
+    <meta name="keywords" content="grade calculator, grade prediction, GPA calculator, letter grades, academic calculator, grade predictor, target grade">
+    <meta name="author" content="Grade Prediction">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Grade Prediction Calculator - Calculate Your Target Grade">
+    <meta property="og:description" content="Free tool to predict what grades you need to reach your target. Calculate with letter grades, tests, assignments, and final exams.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#FF8000">
     {% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'main/images/favicon.ico' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,6 +19,26 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7380460452331152"
      crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Grade Prediction Calculator",
+        "description": "Calculate what grades you need to reach your target grade",
+        "url": "https://kundelik-predict.com",
+        "applicationCategory": "EducationalApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "100"
+        }
+    }
+    </script>
 
     <style>
         /* --- CSS VARIABLES (The DNA of your Brand) --- */
@@ -200,6 +228,8 @@
             box-shadow: 0 4px 12px rgba(255, 128, 0, 0.3);
             transition: all 0.3s ease;
             font-weight: 700;
+            margin: 4px;
+            margin-left: 8px;
         }
 
         .add-btn:hover {
@@ -209,15 +239,15 @@
 
         .grades-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 8px;
             margin-top: 15px;
         }
 
         .grade-item {
             background: #0d1f3a;
             border-radius: var(--radius-md);
-            padding: 12px 8px;
+            padding: 8px 6px;
             text-align: center;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -256,8 +286,8 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            background: #f44336;
-            color: white;
+            background: var(--color-accent);
+            color: var(--color-bg-deep);
             border: none;
             width: 20px;
             height: 20px;
@@ -270,6 +300,23 @@
             opacity: 0;
             transform: scale(0.8);
             transition: all 0.2s ease;
+            font-weight: 700;
+        }
+
+        .remove-btn:hover {
+            background: var(--color-accent-hover);
+            transform: scale(1.1);
+        }
+
+        .grade-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            opacity: 0;
+            transform: scale(0.8);
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
         }
 
         .grade-item:hover .remove-btn {
@@ -287,6 +334,39 @@
             gap: 12px;
             transition: all 0.3s ease;
             border: 1px solid #233554;
+            position: relative;
+        }
+
+        .test-item .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            opacity: 1;
+            transform: scale(1);
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+        }
+
+        .test-item .remove-btn:hover {
+            background: var(--color-accent-hover);
+            transform: scale(1.1);
+        }
+
+        .assignment-subsection .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            opacity: 1;
+            transform: scale(1);
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+        }
+
+        .assignment-subsection .remove-btn:hover {
+            background: var(--color-accent-hover);
+            transform: scale(1.1);
         }
 
         .test-item input, .final-item input {
@@ -344,13 +424,14 @@
             gap: 10px;
             margin-top: 15px;
             padding: 12px;
-            background: #f8f9fa;
+            background: #0d1f3a;
             border-radius: 8px;
+            border: 1px solid #233554;
         }
 
         .weight-input-container label {
             font-size: 13px;
-            color: #6c757d;
+            color: var(--color-text-muted);
             font-weight: 500;
             white-space: nowrap;
         }
@@ -361,20 +442,27 @@
             border-radius: var(--radius-md);
             font-size: 14px;
             text-align: center;
-            background: white;
+            background: #0A192F;
+            color: var(--color-text-heading);
             outline: none;
             transition: all 0.3s ease;
             width: 80px;
         }
 
         .weight-input-container input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(255, 128, 0, 0.2);
+        }
+
+        .percent-label {
+            font-size: 13px;
+            color: var(--color-text-muted);
+            font-weight: 500;
         }
 
         .weight-total {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--color-text-muted);
             margin-left: auto;
         }
 
@@ -388,12 +476,13 @@
         }
 
         .assignment-subsection {
-            background: #f8f9fa;
+            background: #0d1f3a;
             border-radius: 8px;
             padding: 20px;
             margin-top: 15px;
-            border: 1px solid #e5e5e5;
+            border: 1px solid #233554;
             position: relative;
+            padding-top: 40px;
         }
 
         .assignment-subsection-header {
@@ -413,18 +502,19 @@
         .assignment-subsection-title input[type="text"] {
             width: 100%;
             padding: 8px 12px;
-            border: 1px solid #e5e5e5;
+            border: 1px solid #233554;
             border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
-            background: white;
+            background: #0A192F;
+            color: var(--color-text-heading);
             outline: none;
             transition: all 0.3s ease;
         }
 
         .assignment-subsection-title input[type="text"]:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(255, 128, 0, 0.2);
         }
 
         .assignment-subsection-controls {
@@ -432,6 +522,7 @@
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
+            position: relative;
         }
 
         .assignment-subsection-weight,
@@ -444,7 +535,7 @@
         .assignment-subsection-weight label,
         .assignment-subsection-max label {
             font-size: 13px;
-            color: #6c757d;
+            color: var(--color-text-muted);
             white-space: nowrap;
             font-weight: 500;
         }
@@ -453,12 +544,54 @@
         .assignment-subsection-max input {
             width: 70px;
             padding: 8px 10px;
-            border: 1px solid #e5e5e5;
+            border: 1px solid #233554;
             border-radius: 6px;
             font-size: 13px;
             text-align: center;
             background: #0A192F;
             color: var(--color-text-heading);
+            transition: all 0.3s ease;
+        }
+
+        .assignment-subsection-weight input:focus,
+        .assignment-subsection-max input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(255, 128, 0, 0.2);
+        }
+
+        .add-subsection-btn {
+            background: var(--color-accent);
+            color: var(--color-bg-deep);
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 128, 0, 0.3);
+        }
+
+        .add-subsection-btn:hover {
+            transform: translateY(-2px);
+            background: var(--color-accent-hover);
+            box-shadow: 0 6px 16px rgba(255, 128, 0, 0.4);
+        }
+
+        .add-subsection-btn span:first-child {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .assignment-subsection-grades {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
         }
 
         .calculate-btn {
@@ -670,7 +803,7 @@
                     <div class="final-item">
                         <input type="number" id="finalGrade" placeholder="Your grade" step="0.01" data-placeholder-en="Your grade" data-placeholder-kk="Сіздің баға" data-placeholder-ru="Ваша оценка">
                         <span class="slash">/</span>
-                        <input type="number" id="finalMax" placeholder="Max grade" step="0.01" data-placeholder-en="Max grade" data-placeholder-kk="Максималды баға" data-placeholder-ru="Максимальная оценка">
+                        <input type="number" id="finalMax" placeholder="Max grade" step="0.01" value="10" data-placeholder-en="Max grade" data-placeholder-kk="Максималды баға" data-placeholder-ru="Максимальная оценка">
                     </div>
                 </div>
 
@@ -749,11 +882,12 @@
                 }
             });
             
-            // Update placeholder text
+            // Update placeholder text for all elements with data-placeholder attributes
             document.querySelectorAll('[data-placeholder-en]').forEach(el => {
-                const placeholderKey = `data-placeholder-${lang}`;
-                if (el.dataset[`placeholder${lang.charAt(0).toUpperCase() + lang.slice(1)}`] !== undefined) {
-                    el.placeholder = el.dataset[`placeholder${lang.charAt(0).toUpperCase() + lang.slice(1)}`];
+                const langKey = lang.charAt(0).toUpperCase() + lang.slice(1);
+                const placeholderAttr = `placeholder${langKey}`;
+                if (el.dataset[placeholderAttr] !== undefined) {
+                    el.placeholder = el.dataset[placeholderAttr];
                 }
             });
         }
@@ -778,14 +912,27 @@
         }
 
         function getLetterFromNumericGrade(grade) {
+            const numericGrade = typeof grade === 'string' ? parseFloat(grade) : grade;
+            const rounded = Math.round(numericGrade);
             const mapping = {
                 5: 'A',
                 4: 'B',
                 3: 'C',
                 2: 'F'
             };
+            return mapping[rounded] || grade;
+        }
+
+        function getLetterGradeRange(grade) {
             const numericGrade = typeof grade === 'string' ? parseFloat(grade) : grade;
-            return mapping[Math.round(numericGrade)] || grade;
+            const rounded = Math.round(numericGrade);
+            const mapping = {
+                5: 'A (85-100%)',
+                4: 'B (65-84%)',
+                3: 'C (40-64%)',
+                2: 'F (0-39%)'
+            };
+            return mapping[rounded] || grade;
         }
 
         function getGradeLabelText(lang) {
@@ -928,7 +1075,7 @@
             const item = document.createElement('div');
             item.className = 'grade-item';
             item.innerHTML = `
-                <input type="number" min="0" max="10" step="0.1" placeholder="0" value="0"
+                <input type="number" min="0" max="10" step="0.1" placeholder="0"
                        oninput="updateAssignmentColor(this)" onkeydown="handleAssignmentKeydown(event, this)">
                 <button type="button" class="remove-btn" onclick="removeGradeFromSubsection(this)">×</button>
             `;
@@ -957,7 +1104,7 @@
             const subsectionName = `Type ${subsectionCount}`;
             const defaultMax = 10;
             subsection.innerHTML = `
-                <button type="button" class="remove-btn" onclick="removeAssignmentSubsection(this)">×</button>
+                <button type="button" class="remove-btn" onclick="removeAssignmentSubsection(this)" title="Remove assignment type">×</button>
                 <div class="assignment-subsection-header">
                     <div class="assignment-subsection-title">
                         <input type="text" class="subsection-name" placeholder="Type name (e.g., Homework)" value="${subsectionName}" data-placeholder-en="Type name (e.g., Homework)" data-placeholder-kk="Түр атауы (мысалы, Үй тапсырмасы)" data-placeholder-ru="Название типа (например, Домашнее задание)">
@@ -1005,6 +1152,12 @@
             const item = createGradeItem(subsectionId);
             gradesContainer.insertBefore(item, addBtn);
             handleSubsectionMaxChange(subsection.querySelector('.subsection-max-input'));
+            
+            // Focus on the newly created input
+            const newInput = item.querySelector('input[type="number"]');
+            if (newInput) {
+                setTimeout(() => newInput.focus(), 0);
+            }
         }
         
         function removeGradeFromSubsection(btn) {
@@ -1077,16 +1230,26 @@
             const container = document.getElementById('testsContainer');
             const item = document.createElement('div');
             item.className = 'test-item';
+            const lang = document.documentElement.getAttribute('data-lang') || 'en';
+            const gradePlaceholder = lang === 'en' ? 'Your grade' : lang === 'kk' ? 'Сіздің баға' : 'Ваша оценка';
+            const maxPlaceholder = lang === 'en' ? 'Max grade' : lang === 'kk' ? 'Максималды баға' : 'Максимальная оценка';
+            
             item.innerHTML = `
-                <input type="number" class="test-grade" placeholder="Your grade" step="0.01" min="0" oninput="validateTestGrade(this)">
+                <input type="number" class="test-grade" placeholder="${gradePlaceholder}" step="0.01" min="0" oninput="validateTestGrade(this)" data-placeholder-en="Your grade" data-placeholder-kk="Сіздің баға" data-placeholder-ru="Ваша оценка">
                 <span class="slash">/</span>
-                <input type="number" class="test-max" placeholder="Max grade" step="0.01" min="1" required>
+                <input type="number" class="test-max" placeholder="${maxPlaceholder}" step="0.01" min="1" value="10" required data-placeholder-en="Max grade" data-placeholder-kk="Максималды баға" data-placeholder-ru="Максимальная оценка">
                 <button type="button" class="remove-btn" onclick="removeTest(this)">×</button>
             `;
             container.appendChild(item);
             testCount++;
             updateTestCount();
             syncTotalTestsInput(true);
+            
+            // Focus on the newly created grade input
+            const gradeInput = item.querySelector('.test-grade');
+            if (gradeInput) {
+                setTimeout(() => gradeInput.focus(), 0);
+            }
         }
         
         function removeTest(btn) {
@@ -1237,30 +1400,41 @@
                     if (result.error) {
                         resultMessage.textContent = 'Error';
                         resultDetails.textContent = result.error;
+                    } else {
+                        resultMessage.textContent = result.message || 'Calculation Complete';
+                        
+                        const lang = document.documentElement.getAttribute('data-lang') || 'en';
+                        const gradeLabelText = getGradeLabelText(lang);
+                        const useLetterGrades = lang === 'en';
+                        let detailsHTML = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">';
+                        
+                        if (result.current_grade !== undefined) {
                             const currentGradeDisplay = useLetterGrades ? getLetterFromNumericGrade(result.current_grade) : result.current_grade;
-                            detailsHTML += `<div style="text-align: center; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">${gradeLabelText}</div>
-                                <div style="font-size: 24px; font-weight: bold; color: #667eea;">${currentGradeDisplay}</div>
+                            const gradeRange = useLetterGrades ? getLetterGradeRange(result.current_grade) : '';
+                            detailsHTML += `<div style="text-align: center; padding: 15px; background: #0d1f3a; border-radius: 8px; border: 1px solid #233554;">
+                                <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 5px;">${gradeLabelText}</div>
+                                <div style="font-size: 28px; font-weight: bold; color: var(--color-accent);">${currentGradeDisplay}</div>
+                                ${gradeRange ? `<div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px;">${gradeRange}</div>` : ''}
                             </div>`;
                         }
                         if (result.current_percent !== undefined) {
                             const formattedPercent = formatNumber(result.current_percent, lang);
-                            detailsHTML += `<div style="text-align: center; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Current %</div>
-                                <div style="font-size: 24px; font-weight: bold; color: #667eea;">${formattedPercent}%</div>
+                            detailsHTML += `<div style="text-align: center; padding: 15px; background: #0d1f3a; border-radius: 8px; border: 1px solid #233554;">
+                                <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 5px;">Current %</div>
+                                <div style="font-size: 28px; font-weight: bold; color: var(--color-accent);">${formattedPercent}%</div>
                             </div>`;
                         }
                         detailsHTML += '</div>';
                         
                         // Show predictions for each grade
                         if (result.predictions && result.predictions.length > 0) {
-                            detailsHTML += '<div style="border-top: 1px solid #e0e0e0; padding-top: 15px;">';
-                            detailsHTML += '<h3 style="font-size: 14px; color: #333; margin-bottom: 12px;">To reach each grade:</h3>';
+                            detailsHTML += '<div style="border-top: 1px solid #233554; padding-top: 15px;">';
+                            detailsHTML += '<h3 style="font-size: 14px; color: var(--color-accent); margin-bottom: 12px; font-family: var(--font-code); text-transform: uppercase;">To reach each grade:</h3>';
                             
                             result.predictions.forEach(pred => {
-                                const gradeColor = pred.target_grade === 5 ? '#764ba2' : pred.target_grade === 4 ? '#667eea' : '#999';
+                                const gradeColor = pred.target_grade === 5 ? '#4CAF50' : pred.target_grade === 4 ? '#FF8000' : '#8892B0';
                                 const borderColor = pred.reachable ? '#4CAF50' : '#ff9800';
-                                const bgColor = pred.reachable ? '#f1f8f4' : '#fff3e6';
+                                const bgColor = pred.reachable ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 152, 0, 0.1)';
                                 const gradeValueDisplay = useLetterGrades ? getLetterFromNumericGrade(pred.target_grade) : pred.target_grade;
                                 
                                 detailsHTML += `<div style="padding: 12px; background: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 4px; margin-bottom: 10px;">
@@ -1272,17 +1446,17 @@
                                 if (pred.needed_final_percent !== undefined) {
                                     const formattedFinalPercent = formatNumber(pred.needed_final_percent, lang);
                                     const formattedFinalScore = formatNumber(pred.needed_final_score, lang);
-                                    detailsHTML += `<div style="font-size: 13px; color: #666; margin-top: 4px;">
+                                    detailsHTML += `<div style="font-size: 13px; color: var(--color-text-muted); margin-top: 4px;">
                                         <strong>Final Exam:</strong> ${formattedFinalPercent}% (${formattedFinalScore}/10)
                                     </div>`;
                                 } else if (pred.needed_percent !== undefined) {
                                     const formattedPercent = formatNumber(pred.needed_percent, lang);
-                                    detailsHTML += `<div style="font-size: 13px; color: #666; margin-top: 4px;">Need: <strong>${formattedPercent}%</strong> on ${pred.missing_parts.join(' + ')}</div>`;
+                                    detailsHTML += `<div style="font-size: 13px; color: var(--color-text-muted); margin-top: 4px;">Need: <strong>${formattedPercent}%</strong> on ${pred.missing_parts.join(' + ')}</div>`;
                                 } else if (pred.needed_tens !== undefined) {
                                     if (pred.message === 'Already reached') {
                                         detailsHTML += `<div style="font-size: 13px; color: #4CAF50; margin-top: 4px;"><strong>✓ Already reached!</strong></div>`;
                                     } else {
-                                        detailsHTML += `<div style="font-size: 13px; color: #666; margin-top: 4px;">Need: <strong>${pred.needed_tens > 10 ? '10+' : pred.needed_tens} perfect assignment(s)</strong></div>`;
+                                        detailsHTML += `<div style="font-size: 13px; color: var(--color-text-muted); margin-top: 4px;">Need: <strong>${pred.needed_tens > 10 ? '10+' : pred.needed_tens} perfect assignment(s)</strong></div>`;
                                     }
                                 }
                                 

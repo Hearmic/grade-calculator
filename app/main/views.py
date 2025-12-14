@@ -17,6 +17,21 @@ GRADES_PERCENT = {
     2: 0.00,
 }
 
+# Letter grade mapping for English language
+LETTER_GRADES = {
+    5: 'A',
+    4: 'B',
+    3: 'C',
+    2: 'F'
+}
+
+LETTER_GRADE_RANGES = {
+    5: 'A (85-100%)',
+    4: 'B (65-84%)',
+    3: 'C (40-64%)',
+    2: 'F (0-39%)'
+}
+
 # Default weights (used as fallback)
 DEFAULT_WEIGHT_ASSIGNMENTS = 0.25
 DEFAULT_WEIGHT_TESTS = 0.25
@@ -208,11 +223,15 @@ def calculate_prediction(request):
     
     # If already at highest grade
     if next_grade is None:
-        return JsonResponse({
+        response_data = {
             "message": get_translation('already_highest', language),
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2)
-        })
+        }
+        # Add letter grade for English
+        if language == 'en':
+            response_data["current_grade_letter"] = LETTER_GRADES.get(current_grade, str(current_grade))
+        return JsonResponse(response_data)
     
     # Build predictions for all reachable grades
     predictions = []
@@ -272,13 +291,19 @@ def calculate_prediction(request):
             
             predictions.append(pred)
         
-        return JsonResponse({
+        response_data = {
             "message": get_translation('grade_predictions_remaining', language),
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2),
             "predictions": predictions,
             "language": language
-        })
+        }
+        # Add letter grades for English
+        if language == 'en':
+            response_data["current_grade_letter"] = LETTER_GRADES.get(current_grade, str(current_grade))
+            for pred in predictions:
+                pred["target_grade_letter"] = LETTER_GRADES.get(pred["target_grade"], str(pred["target_grade"]))
+        return JsonResponse(response_data)
     
     # Case 2: All assessments completed - calculate additional perfect assignments needed
     else:
@@ -365,13 +390,19 @@ def calculate_prediction(request):
                 "reachable": n <= 20
             })
         
-        return JsonResponse({
+        response_data = {
             "message": get_translation('grade_predictions_assignments', language),
             "current_grade": current_grade,
             "current_percent": round(current_percent * 100, 2),
             "predictions": predictions,
             "language": language
-        })
+        }
+        # Add letter grades for English
+        if language == 'en':
+            response_data["current_grade_letter"] = LETTER_GRADES.get(current_grade, str(current_grade))
+            for pred in predictions:
+                pred["target_grade_letter"] = LETTER_GRADES.get(pred["target_grade"], str(pred["target_grade"]))
+        return JsonResponse(response_data)
 
 
 @require_http_methods(["GET"])
